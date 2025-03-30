@@ -72,12 +72,14 @@ export default function AudiobookPlayer({ onAudiobookChange }) {
         body: formData,
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error("Failed to extract text")
+        console.error("Server error:", data.error)
+        return ""
       }
 
-      const data = await response.json()
-      return data.text
+      return data.text || ""
     } catch (error) {
       console.error("Text extraction error:", error)
       return ""
