@@ -67,7 +67,7 @@ export default function AudiobookPlayer({ onAudiobookChange }) {
       console.log(
         `Sending request for time window: ${startTime}s to ${endTime}s`
       )
-      const response = await fetch("/api/transcribe", {
+      const response = await fetch("/api/extract-text", {
         method: "POST",
         body: formData,
       })
