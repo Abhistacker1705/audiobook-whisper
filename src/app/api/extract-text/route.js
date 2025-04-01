@@ -1,33 +1,3 @@
-/**
- * Custom Instructions for the Model:
- * 1. Audio Processing Context:
- *    - This is a Next.js API route for audio text extraction
- *    - Uses native FFmpeg for audio processing
- *    - Integrates with OpenAI's Whisper API for transcription
- *
- * 2. Key Requirements:
- *    - Handle audio file uploads via FormData
- *    - Extract specific time segments from audio files
- *    - Maintain audio quality during extraction
- *    - Clean up temporary files after processing
- *
- * 3. Error Handling Guidelines:
- *    - Validate input parameters (audio file, time range)
- *    - Handle FFmpeg processing errors gracefully
- *    - Manage Whisper API errors appropriately
- *    - Ensure cleanup of temporary files
- *
- * 4. Performance Considerations:
- *    - Use efficient audio extraction methods
- *    - Minimize memory usage
- *    - Clean up resources promptly
- *
- * 5. Security Guidelines:
- *    - Validate file types and sizes
- *    - Use secure file handling practices
- *    - Protect API keys and sensitive data
- */
-
 import { NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import { writeFile, readFile, unlink } from "fs/promises"

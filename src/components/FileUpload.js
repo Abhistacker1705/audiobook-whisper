@@ -16,8 +16,15 @@ export default function FileUpload({ onFileSelect }) {
     }
 
     try {
-      // Create a local URL for the file
-      const fileUrl = URL.createObjectURL(file)
+      // Create a blob URL with proper MIME type
+      const blob = new Blob([file], { type: file.type })
+      const fileUrl = URL.createObjectURL(blob)
+
+      // Set up cleanup when the URL is no longer needed
+      setTimeout(() => {
+        URL.revokeObjectURL(fileUrl)
+      }, 1000) // Give some time for the audio element to load the URL
+
       onFileSelect(fileUrl, file.name, file)
     } catch (error) {
       console.error("Error handling file:", error)

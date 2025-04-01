@@ -22,11 +22,22 @@ export default function AudiobookPlayer({ onAudiobookChange }) {
   const [isMuted, setIsMuted] = useState(false)
   const [currentContext, setCurrentContext] = useState("")
   const [isLoadingContext, setIsLoadingContext] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const audioRef = useRef(null)
   const isRequestInProgress = useRef(false)
   const lastRequestTime = useRef(0)
   const CONTEXT_WINDOW = 30 // 30 seconds total window (15 before + 15 after)
   const REQUEST_DEBOUNCE = CONTEXT_WINDOW * 1000 // Match the context window size
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   // Extract text content based on current time
   const extractTextContent = async (startTime, endTime) => {
@@ -216,20 +227,32 @@ export default function AudiobookPlayer({ onAudiobookChange }) {
     setCurrentContext("")
   }
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!currentFile) return
 
-    if (isPlaying) {
-      audioRef.current.pause()
-      // Clear any ongoing text extraction
-      if (isRequestInProgress.current) {
-        isRequestInProgress.current = false
-        setIsLoadingContext(false)
+    try {
+      if (isPlaying) {
+        await audioRef.current.pause()
+        // Clear any ongoing text extraction
+        if (isRequestInProgress.current) {
+          isRequestInProgress.current = false
+          setIsLoadingContext(false)
+        }
+      } else {
+        // On mobile, we need to handle the play promise
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          await playPromise
+        }
       }
-    } else {
-      audioRef.current.play()
+      setIsPlaying(!isPlaying)
+    } catch (error) {
+      console.error("Playback error:", error)
+      // Handle mobile autoplay restrictions
+      if (error.name === "NotAllowedError") {
+        alert("Please interact with the page to start playback")
+      }
     }
-    setIsPlaying(!isPlaying)
   }
 
   const handleTimeUpdate = () => {
@@ -360,7 +383,13 @@ export default function AudiobookPlayer({ onAudiobookChange }) {
         src={currentFile}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
+        onError={(e) => {
+          console.error("Audio error:", e)
+          alert("Error playing audio. Please try again.")
+        }}
         className="hidden"
+        playsInline
+        preload="auto"
       />
     </div>
   )
